@@ -1,0 +1,291 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>demo_spatial</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-10-11"><meta name="DC.source" content="demo_spatial.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">This demo evaluate the performance of Algorithm 1 and A2 in a bipartite graph with an IGDB, such the the columns within the IGDB are retricted in a spatial cluster</a></li><li><a href="#2">Generate a group of voxels with a spatial cluster</a></li><li><a href="#3">The graph to indicate the spatial connectivity</a></li><li><a href="#4">Permute nodes in both matrices</a></li><li><a href="#5">Detect IGDB from the bipartite graph</a></li><li><a href="#6">Voxels in the detected IGDB may not be spatially connected</a></li><li><a href="#7">Apply Algorithm A2 to ensure the contiguity</a></li></ul></div><h2 id="1">This demo evaluate the performance of Algorithm 1 and A2 in a bipartite graph with an IGDB, such the the columns within the IGDB are retricted in a spatial cluster</h2><pre class="codeinput">rng(11)
+k=60;   <span class="comment">% case+control</span>
+q1=0.8;q2=0.2;
+mu0=0;mu1=0.8;sigma=1;
+delta=(mu1-mu0)/sigma*sqrt(k/4);
+N = 300; M = 400; n = 30; m = 60;
+</pre><h2 id="2">Generate a group of voxels with a spatial cluster</h2><p>20*20 voxels with a voxel cluster that forms IGDB structure with rows</p><pre class="codeinput">col_nodes = zeros(20,20);
+
+<span class="comment">%col_nodes(3:6,2:8) = ones(4,7);</span>
+<span class="comment">%col_nodes(12:14,3:11) = ones(3,9);</span>
+<span class="comment">%col_nodes(7:11,6) = ones(5,1);</span>
+col_nodes(3:6,4:7) = ones(4,4);
+col_nodes(12:14,3:8) = ones(3,6);
+col_nodes(7:11,6) = ones(5,1);
+col_nodes(5,8:12) = ones(1,5);
+col_nodes(4:7,13:16) = ones(4,4);
+
+figure;imagesc(col_nodes);colorbar;
+</pre><img vspace="5" hspace="5" src="demo_spatial_01.png" alt=""> <h2 id="3">The graph to indicate the spatial connectivity</h2><pre class="codeinput">xval =  (1:20)'*ones(1,20);
+yval = xval';
+x_vec = xval(:);
+y_vec = yval(:);
+
+distW0 = zeros(M);
+<span class="keyword">for</span> i = 1:size(distW0,1)
+    <span class="keyword">for</span> j = 1:size(distW0,2)
+        distW0(i,j) = sum(abs([x_vec(i) y_vec(i)]-[x_vec(j) y_vec(j)]));
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+distW = distW0&lt;2;
+distW = distW-eye(M);
+figure;imagesc(distW);colormap <span class="string">jet</span>;colorbar;
+true_voxels = col_nodes(:);
+
+s_true = 1:n;
+t_true = find(true_voxels);
+G = zeros(N,M);
+G(s_true,t_true) = ones(n,m);
+true_edge = G(:);
+false_edge = 1-true_edge;
+
+W_vec=trnd(k-2,N*M,1);
+idx_true_edge = find(true_edge);
+idx_false_edge = find(false_edge);
+sample_idx_true = datasample(idx_true_edge,floor(q1*sum(true_edge)),<span class="string">'Replace'</span>,false);
+sample_idx_false = datasample(idx_false_edge,ceil(q2*sum(false_edge)),<span class="string">'Replace'</span>,false);
+
+W_vec(sample_idx_true) = nctrnd(k-2,delta,size(sample_idx_true));
+W_vec(sample_idx_false) = nctrnd(k-2,delta,size(sample_idx_false));
+W_n = reshape(W_vec,N,M);
+
+p=2*tcdf(-abs(W_n),k-2);
+logP=-log(p);
+W_org=logP;
+
+figure;imagesc(W_org);colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_spatial_02.png" alt=""> <img vspace="5" hspace="5" src="demo_spatial_03.png" alt=""> <h2 id="4">Permute nodes in both matrices</h2><pre class="codeinput">perm_matrix = reshape((1:N*M),N,M);
+row_perm_idx = randperm(N);
+col_perm_idx = randperm(M);
+perm_matrix = perm_matrix(row_perm_idx,col_perm_idx);
+perm_vec = perm_matrix(:);
+[result ID]=sort(perm_vec);
+W_vec = W_org(:);
+W1_vec = W_vec(perm_vec);
+W1 = reshape(W1_vec,N,M);
+
+
+perm_matrix2 = squareform(1:(M*(M-1)/2));
+perm_matrix2 = perm_matrix2(col_perm_idx,col_perm_idx);
+perm_vec2 = squareform(perm_matrix2);
+distW_vec = squareform(distW);
+distW1_vec = distW_vec(perm_vec2);
+distW1 = squareform(distW1_vec);
+figure;imagesc(distW1);colorbar;snapnow
+figure;imagesc(W1);colormap <span class="string">jet</span>;colorbar;snapnow
+
+distW0_vec = squareform(distW0);
+distW0_vec_perm = distW0_vec(perm_vec2);
+distW0_perm = squareform(distW0_vec_perm);
+<span class="comment">%figure;imagesc(distW0_perm);colorbar;snapnow</span>
+</pre><img vspace="5" hspace="5" src="demo_spatial_04.png" alt=""> <img vspace="5" hspace="5" src="demo_spatial_05.png" alt=""> <img vspace="5" hspace="5" src="demo_spatial_06.png" alt=""> <h2 id="5">Detect IGDB from the bipartite graph</h2><pre class="codeinput">c_vec0 = 0.1:0.1:5;
+r=-log(0.05);
+lambda_vec0 = 1:0.05:2;
+[s_rev,t_rev, c_rev, lambda_rev]=greedy_lik(W1,c_vec0,lambda_vec0,r,10);
+s_in = setdiff(1:N,s_rev);
+t_in = setdiff(1:M,t_rev);
+figure;imagesc(W1(s_in,t_in));colormap <span class="string">jet</span>;colorbar;
+figure;imagesc(W1([s_in sort(s_rev)],[t_in sort(t_rev)]));colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_spatial_07.png" alt=""> <img vspace="5" hspace="5" src="demo_spatial_08.png" alt=""> <img vspace="5" hspace="5" src="demo_spatial_09.png" alt=""> <h2 id="6">Voxels in the detected IGDB may not be spatially connected</h2><pre class="codeinput">raw_t = zeros(M,1);
+raw_t(col_perm_idx(t_in)) = ones(size(t_in));
+t_shape = reshape(raw_t,20,20);
+figure;imagesc(t_shape);colorbar;
+
+<span class="comment">%find(true_voxels(col_perm_idx))' %t_in</span>
+</pre><img vspace="5" hspace="5" src="demo_spatial_10.png" alt=""> <img vspace="5" hspace="5" src="demo_spatial_11.png" alt=""> <h2 id="7">Apply Algorithm A2 to ensure the contiguity</h2><pre class="codeinput">node_weights = sum(W1(s_in,:),1);
+t_in_new = Refine_spatial(t_in,distW0_perm,node_weights);
+
+raw_t_new = zeros(M,1);
+raw_t_new(col_perm_idx(t_in_new)) = ones(size(t_in_new));
+t_shape_new = reshape(raw_t_new,20,20);
+figure;imagesc(t_shape_new);colorbar;
+</pre><img vspace="5" hspace="5" src="demo_spatial_12.png" alt=""> <img vspace="5" hspace="5" src="demo_spatial_13.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% This demo evaluate the performance of Algorithm 1 and A2 in a bipartite graph with an IGDB, such the the columns within the IGDB are retricted in a spatial cluster
+rng(11)
+k=60;   % case+control
+q1=0.8;q2=0.2;
+mu0=0;mu1=0.8;sigma=1;
+delta=(mu1-mu0)/sigma*sqrt(k/4);
+N = 300; M = 400; n = 30; m = 60;  
+
+%% Generate a group of voxels with a spatial cluster
+% 20*20 voxels with a voxel cluster that forms IGDB structure with
+% rows
+col_nodes = zeros(20,20);
+
+%col_nodes(3:6,2:8) = ones(4,7);
+%col_nodes(12:14,3:11) = ones(3,9);
+%col_nodes(7:11,6) = ones(5,1);
+col_nodes(3:6,4:7) = ones(4,4);
+col_nodes(12:14,3:8) = ones(3,6);
+col_nodes(7:11,6) = ones(5,1);
+col_nodes(5,8:12) = ones(1,5);
+col_nodes(4:7,13:16) = ones(4,4);
+
+figure;imagesc(col_nodes);colorbar;
+
+%% The graph to indicate the spatial connectivity
+xval =  (1:20)'*ones(1,20);
+yval = xval';
+x_vec = xval(:);
+y_vec = yval(:);
+
+distW0 = zeros(M);
+for i = 1:size(distW0,1)
+    for j = 1:size(distW0,2)
+        distW0(i,j) = sum(abs([x_vec(i) y_vec(i)]-[x_vec(j) y_vec(j)]));      
+    end
+end
+distW = distW0<2;
+distW = distW-eye(M);
+figure;imagesc(distW);colormap jet;colorbar;
+true_voxels = col_nodes(:);
+
+s_true = 1:n;
+t_true = find(true_voxels);
+G = zeros(N,M);
+G(s_true,t_true) = ones(n,m);
+true_edge = G(:);
+false_edge = 1-true_edge;
+
+W_vec=trnd(k-2,N*M,1);
+idx_true_edge = find(true_edge);
+idx_false_edge = find(false_edge);
+sample_idx_true = datasample(idx_true_edge,floor(q1*sum(true_edge)),'Replace',false);
+sample_idx_false = datasample(idx_false_edge,ceil(q2*sum(false_edge)),'Replace',false);
+
+W_vec(sample_idx_true) = nctrnd(k-2,delta,size(sample_idx_true));
+W_vec(sample_idx_false) = nctrnd(k-2,delta,size(sample_idx_false));
+W_n = reshape(W_vec,N,M);
+
+p=2*tcdf(-abs(W_n),k-2);
+logP=-log(p);
+W_org=logP;
+
+figure;imagesc(W_org);colormap jet;colorbar;
+
+%% Permute nodes in both matrices
+perm_matrix = reshape((1:N*M),N,M);
+row_perm_idx = randperm(N);
+col_perm_idx = randperm(M);
+perm_matrix = perm_matrix(row_perm_idx,col_perm_idx);
+perm_vec = perm_matrix(:);
+[result ID]=sort(perm_vec);
+W_vec = W_org(:);
+W1_vec = W_vec(perm_vec);
+W1 = reshape(W1_vec,N,M);
+
+
+perm_matrix2 = squareform(1:(M*(M-1)/2));
+perm_matrix2 = perm_matrix2(col_perm_idx,col_perm_idx);
+perm_vec2 = squareform(perm_matrix2);
+distW_vec = squareform(distW);
+distW1_vec = distW_vec(perm_vec2);
+distW1 = squareform(distW1_vec);
+figure;imagesc(distW1);colorbar;snapnow
+figure;imagesc(W1);colormap jet;colorbar;snapnow
+
+distW0_vec = squareform(distW0);
+distW0_vec_perm = distW0_vec(perm_vec2);
+distW0_perm = squareform(distW0_vec_perm);
+%figure;imagesc(distW0_perm);colorbar;snapnow
+
+%% Detect IGDB from the bipartite graph
+c_vec0 = 0.1:0.1:5;
+r=-log(0.05);
+lambda_vec0 = 1:0.05:2;
+[s_rev,t_rev, c_rev, lambda_rev]=greedy_lik(W1,c_vec0,lambda_vec0,r,10);
+s_in = setdiff(1:N,s_rev);
+t_in = setdiff(1:M,t_rev);
+figure;imagesc(W1(s_in,t_in));colormap jet;colorbar;
+figure;imagesc(W1([s_in sort(s_rev)],[t_in sort(t_rev)]));colormap jet;colorbar;
+
+%% Voxels in the detected IGDB may not be spatially connected
+raw_t = zeros(M,1);
+raw_t(col_perm_idx(t_in)) = ones(size(t_in));
+t_shape = reshape(raw_t,20,20);
+figure;imagesc(t_shape);colorbar;
+
+%find(true_voxels(col_perm_idx))' %t_in
+
+%% Apply Algorithm A2 to ensure the contiguity
+node_weights = sum(W1(s_in,:),1);
+t_in_new = Refine_spatial(t_in,distW0_perm,node_weights);
+
+raw_t_new = zeros(M,1);
+raw_t_new(col_perm_idx(t_in_new)) = ones(size(t_in_new));
+t_shape_new = reshape(raw_t_new,20,20);
+figure;imagesc(t_shape_new);colorbar;
+
+##### SOURCE END #####
+--></body></html>
