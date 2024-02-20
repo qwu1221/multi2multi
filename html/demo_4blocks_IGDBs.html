@@ -1,0 +1,297 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>This demo evaluates the performance of Algorithm 1 in a bipartite graph with four IGDBs</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-02-19"><meta name="DC.source" content="demo_4blocks_IGDBs.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>This demo evaluates the performance of Algorithm 1 in a bipartite graph with four IGDBs</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Generate a bipartite graph with four IGDBs</a></li><li><a href="#2">Permute nodes</a></li><li><a href="#3">Detect the first IGDB</a></li><li><a href="#5">Detect the second IGDB</a></li><li><a href="#7">Detect the third IGDB</a></li><li><a href="#9">Detect the fourth IGDB</a></li><li><a href="#10">Display full detected structure</a></li></ul></div><h2 id="1">Generate a bipartite graph with four IGDBs</h2><pre class="codeinput">k=60;   <span class="comment">% case+control</span>
+q1=0.8;q2=0.1;
+mu0=0;mu1=1;sigma=1;
+delta=(mu1-mu0)/sigma*sqrt(k/4);
+N = 200; M = 100; n1 = 30; m1 = 20;  n2 = 20; m2=20; n3 = 15; m3=15; n4 = 15; m4=15;
+
+
+G = zeros(N,M);
+G(1:n1,1:m1) = ones(n1,m1);
+G((n1+1):(n1+n2),(m1+1):(m1+m2)) = ones(n2,m2);
+G((n1+n2+1):(n1+n2+n3),(m1+m2+1):(m1+m2+m3)) = ones(n3,m3);
+G((n1+n2+n3+1):(n1+n2+n3+n4),(m1+m2+m3+1):(m1+m2+m3+m4)) = ones(n4,m4);
+true_edge = G(:);
+false_edge = 1-true_edge;
+
+W_vec=trnd(k-2,N*M,1);
+idx_true_edge = find(true_edge);
+idx_false_edge = find(false_edge);
+sample_idx_true = datasample(idx_true_edge,floor(q1*sum(true_edge)),<span class="string">'Replace'</span>,false);
+sample_idx_false = datasample(idx_false_edge,ceil(q2*sum(false_edge)),<span class="string">'Replace'</span>,false);
+
+W_vec(sample_idx_true) = nctrnd(k-2,delta,size(sample_idx_true));
+W_vec(sample_idx_false) = nctrnd(k-2,delta,size(sample_idx_false));
+W_n = reshape(W_vec,N,M);
+
+p=2*tcdf(-abs(W_n),k-2);
+logP=-log(p);
+W_org=logP;
+
+figure;imagesc(W_org);colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_01.png" alt=""> <h2 id="2">Permute nodes</h2><pre class="codeinput">perm_matrix = reshape((1:N*M),N,M);
+row_perm_idx = randperm(N);
+col_perm_idx = randperm(M);
+perm_matrix = perm_matrix(row_perm_idx,col_perm_idx);
+perm_vec = perm_matrix(:);
+[result ID]=sort(perm_vec);
+W_vec = W_org(:);
+W1_vec = W_vec(perm_vec);
+W1 = reshape(W1_vec,N,M);
+figure;imagesc(W1);colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_02.png" alt=""> <h2 id="3">Detect the first IGDB</h2><p><b>Detect the IGDB</b></p><pre class="codeinput">c_vec0 = 0.1:0.1:5;
+r=-log(0.05);
+lambda_vec0 = 1:0.05:2;
+[s_rev,t_rev, c_rev, lambda_rev]=greedy_lik(W1,c_vec0,lambda_vec0,r,20);
+s_in = setdiff(1:N,s_rev);
+t_in = setdiff(1:M,t_rev);
+figure;imagesc(W1(s_in,t_in));colormap <span class="string">jet</span>;colorbar;
+figure;imagesc(W1([s_in sort(s_rev)],[t_in sort(t_rev)]));colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_03.png" alt=""> <img vspace="5" hspace="5" src="demo_4blocks_IGDBs_04.png" alt=""> <p><b>Remove the detected subgraph and refill with mean</b></p><pre class="codeinput">W_vec = W1(:);
+p = sum(W_vec&gt;r)/size(W_vec,1);
+W_vec = W_vec(W_vec&gt;r);
+mean_W = mean(W_vec);
+
+a = binornd(1,p*ones(1,size(s_in,2)*size(t_in,2)));
+input_vec = mean_W*a;
+input_clu = reshape(input_vec,[size(s_in,2) size(t_in,2)]);
+W2 = W1;
+W2(s_in,t_in) = input_clu;
+
+figure;imagesc(W2([s_in sort(s_rev)],[t_in sort(t_rev)]));colormap <span class="string">jet</span>;colorbar;
+<span class="comment">%figure;imagesc(W2);colormap jet;colorbar;</span>
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_05.png" alt=""> <h2 id="5">Detect the second IGDB</h2><p><b>Repeat IGDB detection</b></p><pre class="codeinput">[s_rev2,t_rev2, c_rev2, lambda_rev2]=greedy_lik(W2,c_vec0,lambda_vec0,r,20);
+s_in2 = setdiff(1:N,s_rev2);
+t_in2 = setdiff(1:M,t_rev2);
+figure;imagesc(W2(s_in2,t_in2));colormap <span class="string">jet</span>;colorbar;
+figure;imagesc(W2([s_in2 sort(s_rev2)],[t_in2 sort(t_rev2)]));colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_06.png" alt=""> <img vspace="5" hspace="5" src="demo_4blocks_IGDBs_07.png" alt=""> <p><b>Remove the detected subgraph and refill with mean</b></p><pre class="codeinput">a = binornd(1,p*ones(1,size(s_in2,2)*size(t_in2,2)));
+input_vec = mean_W*a;
+input_clu = reshape(input_vec,[size(s_in2,2) size(t_in2,2)]);
+W3 = W2;
+W3(s_in2,t_in2) = input_clu;
+
+figure;imagesc(W3([s_in2 sort(s_rev2)],[t_in2 sort(t_rev2)]));colormap <span class="string">jet</span>;colorbar;
+<span class="comment">%figure;imagesc(W2);colormap jet;colorbar;</span>
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_08.png" alt=""> <h2 id="7">Detect the third IGDB</h2><p><b>Repeat IGDB detection</b></p><pre class="codeinput">[s_rev3,t_rev3, c_rev3, lambda_rev3]=greedy_lik(W3,c_vec0,lambda_vec0,r,20);
+s_in3 = setdiff(1:N,s_rev3);
+t_in3 = setdiff(1:M,t_rev3);
+figure;imagesc(W3(s_in3,t_in3));colormap <span class="string">jet</span>;colorbar;
+figure;imagesc(W3([s_in3 sort(s_rev3)],[t_in3 sort(t_rev3)]));colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_09.png" alt=""> <img vspace="5" hspace="5" src="demo_4blocks_IGDBs_10.png" alt=""> <p><b>Remove the detected subgraph and refill with mean</b></p><pre class="codeinput">a = binornd(1,p*ones(1,size(s_in3,2)*size(t_in3,2)));
+input_vec = mean_W*a;
+input_clu = reshape(input_vec,[size(s_in3,2) size(t_in3,2)]);
+W4 = W3;
+W4(s_in3,t_in3) = input_clu;
+
+figure;imagesc(W4([s_in3 sort(s_rev3)],[t_in3 sort(t_rev3)]));colormap <span class="string">jet</span>;colorbar;
+<span class="comment">%figure;imagesc(W2);colormap jet;colorbar;</span>
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_11.png" alt=""> <h2 id="9">Detect the fourth IGDB</h2><p><b>Repeat IGDB detection</b></p><pre class="codeinput">[s_rev4,t_rev4, c_rev4, lambda_rev4]=greedy_lik(W4,c_vec0,lambda_vec0,r,20);
+s_in4 = setdiff(1:N,s_rev4);
+t_in4 = setdiff(1:M,t_rev4);
+figure;imagesc(W3(s_in4,t_in4));colormap <span class="string">jet</span>;colorbar;
+figure;imagesc(W3([s_in4 sort(s_rev4)],[t_in4 sort(t_rev4)]));colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_12.png" alt=""> <img vspace="5" hspace="5" src="demo_4blocks_IGDBs_13.png" alt=""> <h2 id="10">Display full detected structure</h2><pre class="codeinput">s_left = setdiff(1:N,[s_in s_in2 s_in3 s_in4]);
+t_left = setdiff(1:M,[t_in t_in2 t_in3 t_in4]);
+figure;imagesc(W1([s_in s_in2 s_in3 s_in4 sort(s_left)],[t_in t_in2 t_in3 t_in4 sort(t_left)]));colormap <span class="string">jet</span>;colorbar;
+</pre><img vspace="5" hspace="5" src="demo_4blocks_IGDBs_14.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% This demo evaluates the performance of Algorithm 1 in a bipartite graph with four IGDBs
+%% Generate a bipartite graph with four IGDBs
+k=60;   % case+control
+q1=0.8;q2=0.1;
+mu0=0;mu1=1;sigma=1;
+delta=(mu1-mu0)/sigma*sqrt(k/4);
+N = 200; M = 100; n1 = 30; m1 = 20;  n2 = 20; m2=20; n3 = 15; m3=15; n4 = 15; m4=15;
+
+
+G = zeros(N,M);
+G(1:n1,1:m1) = ones(n1,m1);
+G((n1+1):(n1+n2),(m1+1):(m1+m2)) = ones(n2,m2);
+G((n1+n2+1):(n1+n2+n3),(m1+m2+1):(m1+m2+m3)) = ones(n3,m3);
+G((n1+n2+n3+1):(n1+n2+n3+n4),(m1+m2+m3+1):(m1+m2+m3+m4)) = ones(n4,m4);
+true_edge = G(:);
+false_edge = 1-true_edge;
+
+W_vec=trnd(k-2,N*M,1);
+idx_true_edge = find(true_edge);
+idx_false_edge = find(false_edge);
+sample_idx_true = datasample(idx_true_edge,floor(q1*sum(true_edge)),'Replace',false);
+sample_idx_false = datasample(idx_false_edge,ceil(q2*sum(false_edge)),'Replace',false);
+
+W_vec(sample_idx_true) = nctrnd(k-2,delta,size(sample_idx_true));
+W_vec(sample_idx_false) = nctrnd(k-2,delta,size(sample_idx_false));
+W_n = reshape(W_vec,N,M);
+
+p=2*tcdf(-abs(W_n),k-2);
+logP=-log(p);
+W_org=logP;
+
+figure;imagesc(W_org);colormap jet;colorbar;
+
+%% Permute nodes
+perm_matrix = reshape((1:N*M),N,M);
+row_perm_idx = randperm(N);
+col_perm_idx = randperm(M);
+perm_matrix = perm_matrix(row_perm_idx,col_perm_idx);
+perm_vec = perm_matrix(:);
+[result ID]=sort(perm_vec);
+W_vec = W_org(:);
+W1_vec = W_vec(perm_vec);
+W1 = reshape(W1_vec,N,M);
+figure;imagesc(W1);colormap jet;colorbar;
+
+%% Detect the first IGDB
+% *Detect the IGDB*
+c_vec0 = 0.1:0.1:5;
+r=-log(0.05);
+lambda_vec0 = 1:0.05:2;
+[s_rev,t_rev, c_rev, lambda_rev]=greedy_lik(W1,c_vec0,lambda_vec0,r,20);
+s_in = setdiff(1:N,s_rev);
+t_in = setdiff(1:M,t_rev);
+figure;imagesc(W1(s_in,t_in));colormap jet;colorbar;
+figure;imagesc(W1([s_in sort(s_rev)],[t_in sort(t_rev)]));colormap jet;colorbar;
+%%
+% *Remove the detected subgraph and refill with mean*
+W_vec = W1(:);
+p = sum(W_vec>r)/size(W_vec,1);
+W_vec = W_vec(W_vec>r);
+mean_W = mean(W_vec);
+
+a = binornd(1,p*ones(1,size(s_in,2)*size(t_in,2)));
+input_vec = mean_W*a;
+input_clu = reshape(input_vec,[size(s_in,2) size(t_in,2)]);
+W2 = W1;
+W2(s_in,t_in) = input_clu;
+
+figure;imagesc(W2([s_in sort(s_rev)],[t_in sort(t_rev)]));colormap jet;colorbar;
+%figure;imagesc(W2);colormap jet;colorbar;
+
+%% Detect the second IGDB 
+% *Repeat IGDB detection*
+
+[s_rev2,t_rev2, c_rev2, lambda_rev2]=greedy_lik(W2,c_vec0,lambda_vec0,r,20);
+s_in2 = setdiff(1:N,s_rev2);
+t_in2 = setdiff(1:M,t_rev2);
+figure;imagesc(W2(s_in2,t_in2));colormap jet;colorbar;
+figure;imagesc(W2([s_in2 sort(s_rev2)],[t_in2 sort(t_rev2)]));colormap jet;colorbar;
+
+%%
+% *Remove the detected subgraph and refill with mean*
+a = binornd(1,p*ones(1,size(s_in2,2)*size(t_in2,2)));
+input_vec = mean_W*a;
+input_clu = reshape(input_vec,[size(s_in2,2) size(t_in2,2)]);
+W3 = W2;
+W3(s_in2,t_in2) = input_clu;
+
+figure;imagesc(W3([s_in2 sort(s_rev2)],[t_in2 sort(t_rev2)]));colormap jet;colorbar;
+%figure;imagesc(W2);colormap jet;colorbar;
+
+
+%% Detect the third IGDB 
+% *Repeat IGDB detection*
+
+[s_rev3,t_rev3, c_rev3, lambda_rev3]=greedy_lik(W3,c_vec0,lambda_vec0,r,20);
+s_in3 = setdiff(1:N,s_rev3);
+t_in3 = setdiff(1:M,t_rev3);
+figure;imagesc(W3(s_in3,t_in3));colormap jet;colorbar;
+figure;imagesc(W3([s_in3 sort(s_rev3)],[t_in3 sort(t_rev3)]));colormap jet;colorbar;
+
+%%
+% *Remove the detected subgraph and refill with mean*
+a = binornd(1,p*ones(1,size(s_in3,2)*size(t_in3,2)));
+input_vec = mean_W*a;
+input_clu = reshape(input_vec,[size(s_in3,2) size(t_in3,2)]);
+W4 = W3;
+W4(s_in3,t_in3) = input_clu;
+
+figure;imagesc(W4([s_in3 sort(s_rev3)],[t_in3 sort(t_rev3)]));colormap jet;colorbar;
+%figure;imagesc(W2);colormap jet;colorbar;
+
+
+%% Detect the fourth IGDB 
+% *Repeat IGDB detection*
+
+[s_rev4,t_rev4, c_rev4, lambda_rev4]=greedy_lik(W4,c_vec0,lambda_vec0,r,20);
+s_in4 = setdiff(1:N,s_rev4);
+t_in4 = setdiff(1:M,t_rev4);
+figure;imagesc(W3(s_in4,t_in4));colormap jet;colorbar;
+figure;imagesc(W3([s_in4 sort(s_rev4)],[t_in4 sort(t_rev4)]));colormap jet;colorbar;
+
+%% Display full detected structure
+s_left = setdiff(1:N,[s_in s_in2 s_in3 s_in4]);
+t_left = setdiff(1:M,[t_in t_in2 t_in3 t_in4]);
+figure;imagesc(W1([s_in s_in2 s_in3 s_in4 sort(s_left)],[t_in t_in2 t_in3 t_in4 sort(t_left)]));colormap jet;colorbar;
+
+
+
+##### SOURCE END #####
+--></body></html>
